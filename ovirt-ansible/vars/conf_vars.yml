@@ -1,0 +1,5 @@
+engine-ip: 192.168.122.237
+vg_name: isan
+lv_name: lun1
+iqn_target_name: iqn.2016-10.com.example:t1
+iqn_acl_name: iqn.2016-10.com.example:ovirt
