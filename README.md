@@ -1,2 +1,2 @@
-# build-ovirt
-Automation to build ovirt environment
+# build-ovirt-lab
+Automation to build ovirt lab environment
