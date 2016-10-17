@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Take one argument from the commandline: VM name
+if ! [ $# -eq 1 ]; then
+    echo "Usage: $0 <user-name>"
+    exit 1
+fi
+
 #VM name
 VM_NAME=ovirt-engine
 
@@ -17,13 +23,26 @@ if [ "$?" -eq 0 ]; then
 fi
 
 # Directory to store images
-DIR=/virt/images
+DIR=/home/$1/ovirt-build/images
+mkdir -p $DIR
+
+MASTER_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ssh key file
-SSH_KEY=$(cat /home/sturrent/.ssh/id_rsa.pub)
+SSH_KEY=$(cat /home/$1/.ssh/id_rsa.pub)
 
 # Location of cloud image
-CENTOS_IMAGE=$DIR/CentOS-7-x86_64-GenericCloud-1608.qcow2
+CENTOS_IMAGE=$DIR/CentOS-7-x86_64-GenericCloud.qcow2
+
+# Verify the cloud image is in place, if not download it
+if [ ! -f "$CENTOS_IMAGE" ]
+    then
+	echo "Downloading centos cloud image"
+	wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 \
+        -O $CENTOS_IMAGE -q --show-progress
+else
+	echo "Centos image already in place"
+fi
 
 IMAGE=$CENTOS_IMAGE
 #IMAGE=$UBUNTU_IMAGE
@@ -78,14 +97,13 @@ pushd $DIR/$VM_NAME > /dev/null
 preserve_hostname: False
 hostname: $VM_NAME
 fqdn: $VM_NAME-engine.example.com
-manage_etc_hosts: true
 
 # Set root pass
 users:
   - name: root
   - name: centos
     sudo: ALL=(ALL) NOPASSWD:ALL
-    lock_passwd: true
+    lock_passwd: false
     ssh-authorized-keys:
       - $SSH_KEY
 chpasswd:
@@ -101,7 +119,7 @@ packages:
   - bash-completion
 
 # Upgrade system
-package_upgrade: true
+#package_upgrade: true
 
 # Remove cloud-init when finished with it
 runcmd:
@@ -118,7 +136,7 @@ _EOF_
     echo "$(date -R) Copying template image..."
     cp $IMAGE $DISK
 
-    qemu-img create -f qcow2 $DIR/$VM_NAME/$DISK2 20G
+    qemu-img create -f qcow2 $DISK2 20G
 
     # Create CD-ROM ISO with cloud-init config
     echo "$(date -R) Generating ISO for cloud-init..."
@@ -153,7 +171,23 @@ _EOF_
     # Remove the unnecessary cloud init files
     rm $USER_DATA $CI_ISO
 
-    echo "$(date -R) DONE. SSH to $VM_NAME using $IP with  username '$USER_IMG'."
+    # Set host name with new ip on host file and ansible vars file
+    echo "$(date -R) Setting host name and vars"
+    if grep -q ovirt-engine /etc/hosts
+    then 
+	sed -i '/ovirt-engine/c\'"$IP"' ovirt-engine.example.com ovirt-engine'  /etc/hosts
+    else
+	echo "$IP ovirt-engine.example.com ovirt-engine" >> /etc/hosts
+    fi
+
+    sed -i '/engine_ip/c\engine_ip: '"$IP"'' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
+    BASEADDR=$(echo $IP | awk -F. '{$NF="";print $0}' | tr  " " ".")
+    HOST1IP=$(expr $(echo $IP | awk -F. '{print $4}') + 1)
+    HOST2IP=$(expr $HOST1IP + 1)
+    sed -i '/host1_ip/c\host1_ip: '"$BASEADDR"''"$HOST1IP"'' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
+    sed -i '/host2_ip/c\host2_ip: '"$BASEADDR"''"$HOST2IP"'' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
+    sed -i '/gw_ip/c\gw_ip: '"$BASEADDR"'1' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
+    echo "$(date -R) DONE. SSH to $VM_NAME using ' ssh $USER_IMG@ovirt-engine '"
 
 popd > /dev/null
  

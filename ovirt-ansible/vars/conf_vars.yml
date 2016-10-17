@@ -1,4 +1,7 @@
-engine-ip: 192.168.122.237
+engine_ip: 192.168.122.248
+host1_ip: 192.168.122.249
+host2_ip: 192.168.122.250
+gw_ip: 192.168.122.1
 vg_name: isan
 lv_name: lun1
 iqn_target_name: iqn.2016-10.com.example:t1

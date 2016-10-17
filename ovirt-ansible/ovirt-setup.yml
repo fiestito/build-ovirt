@@ -7,13 +7,13 @@
 
   tasks:
     - name: set /etc/hosts file
-      blockinfile:
+      template:
+        src: templates/hosts.j2
         dest: /etc/hosts
-        block: |
-          192.168.122.237    ovirt-engine.example.com    ovirt-engine
-          192.168.122.9    ovirt-host1.example.com     ovirt-host1
-          192.168.122.10    ovirt-host2.example.com    ovirt-host2
-    
+        owner: root
+        group: root
+        mode: 0644   
+ 
     - name: Disable NetworkManager
       service:
         name: NetworkManager
@@ -24,7 +24,7 @@
         state: started
         enabled: yes
 
-    - name: install lvm, dnsmasq and targetcli
+    - name: install lvm, dnsmasq, nfs-utils and targetcli
       yum:
         name: "{{ item }}"
         state: latest
@@ -32,15 +32,15 @@
         - dnsmasq
         - targetcli
         - lvm2
+        - nfs-utils
 
     - name: update dnsmasq config
-      blockinfile:
+      template:
+        src: templates/dnsmasq.conf.j2
         dest: /etc/dnsmasq.conf
-        block: |
-          address=/ovirt-engine.example.com/192.168.122.237
-          address=/ovirt-host1.example.com/192.168.122.9
-          address=/ovirt-host2.example.com/192.168.122.10
-          server=192.168.122.1
+        owner: root
+        group: root
+        mode: 0644
 
     - name: start and enable dnsmasq
       service:
@@ -76,7 +76,9 @@
         state: started
         enabled: yes
 
-
-      
-
+    - name: Start and enable nfs service
+      service:
+        name: nfs-server
+        state: started
+        enabled: yes
 
