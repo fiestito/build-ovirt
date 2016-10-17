@@ -110,7 +110,7 @@ users:
   - name: root
   - name: centos
     sudo: ALL=(ALL) NOPASSWD:ALL
-    lock_passwd: false
+    lock_passwd: true
     ssh-authorized-keys:
       - $SSH_KEY
 chpasswd:
@@ -123,6 +123,7 @@ packages:
   - epel-release
   - telnet
   - nmap
+  - bind-utils
   - bash-completion
 
 # Upgrade system
