@@ -55,7 +55,7 @@
     - name: vg setup
       lvg:
         vg: "{{ vg_name }}"
-        pvs: /dev/vdb
+        pvs: "{{ pv_name }}"
     - name: lv setup
       lvol: 
         vg: "{{ vg_name }}"
