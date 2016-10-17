@@ -26,6 +26,7 @@ fi
 DIR=/home/$1/ovirt-build/images
 mkdir -p $DIR
 
+# Directory of the script
 MASTER_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ssh key file
@@ -180,6 +181,7 @@ _EOF_
 	echo "$IP ovirt-engine.example.com ovirt-engine" >> /etc/hosts
     fi
 
+    # Updated ansible vars file with corresponding IP info
     sed -i '/engine_ip/c\engine_ip: '"$IP"'' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
     BASEADDR=$(echo $IP | awk -F. '{$NF="";print $0}' | tr  " " ".")
     HOST1IP=$(expr $(echo $IP | awk -F. '{print $4}') + 1)
