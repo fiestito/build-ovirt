@@ -1,7 +1,7 @@
 engine_ip: 192.168.122.237
 host1_ip: 192.168.122.238
 host2_ip: 192.168.122.239
-gw_ip: 192.168.122.1
+dns_ip: 192.168.122.1
 pv_name: /dev/vdb
 vg_name: isan
 lv_name: lun1
