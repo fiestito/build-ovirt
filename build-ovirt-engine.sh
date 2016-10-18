@@ -179,23 +179,41 @@ _EOF_
     # Remove the unnecessary cloud init files
     rm $USER_DATA $CI_ISO
 
+    # Updated ansible vars file with corresponding IP info
+    sed -i '/engine_ip/c\engine_ip: '"$IP"'' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
+    BASEADDR=$(echo $IP | awk -F. '{$NF="";print $0}' | tr  " " ".")
+    HOST1IP=$(expr $(echo $IP | awk -F. '{print $4}') + 1)
+    HOST2IP=$(expr $HOST1IP + 1)
+    IP_HOST1=$(echo $BASEADDR$HOST1IP)
+    IP_HOST2=$(echo $BASEADDR$HOST2IP)
+    sed -i '/host1_ip/c\host1_ip: '"$IP_HOST1"'' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
+    sed -i '/host2_ip/c\host2_ip: '"$IP_HOST2"'' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
+    sed -i '/dns_ip/c\dns_ip: '"$BASEADDR"'1' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
+
     # Set host name with new ip on host file and ansible vars file
     echo "$(date -R) Setting host name and vars"
-    if grep -q ovirt-engine /etc/hosts
+    if grep -q ovirt-engine.example.com /etc/hosts)
     then 
 	sed -i '/ovirt-engine/c\'"$IP"' ovirt-engine.example.com ovirt-engine'  /etc/hosts
     else
 	echo "$IP ovirt-engine.example.com ovirt-engine" >> /etc/hosts
     fi
 
-    # Updated ansible vars file with corresponding IP info
-    sed -i '/engine_ip/c\engine_ip: '"$IP"'' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
-    BASEADDR=$(echo $IP | awk -F. '{$NF="";print $0}' | tr  " " ".")
-    HOST1IP=$(expr $(echo $IP | awk -F. '{print $4}') + 1)
-    HOST2IP=$(expr $HOST1IP + 1)
-    sed -i '/host1_ip/c\host1_ip: '"$BASEADDR"''"$HOST1IP"'' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
-    sed -i '/host2_ip/c\host2_ip: '"$BASEADDR"''"$HOST2IP"'' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
-    sed -i '/gw_ip/c\gw_ip: '"$BASEADDR"'1' $MASTER_DIR/ovirt-ansible/vars/conf_vars.yml
+    if $(grep -q ovirt-host1.example.com /etc/hosts
+    then 
+	sed -i '/ovirt-host1/c\'"$IP_HOST1"' ovirt-host1.example.com ovirt-host1'  /etc/hosts
+    else
+	echo "$IP_HOST1 ovirt-host1.example.com ovirt-host1" >> /etc/hosts
+    fi
+
+    if $(grep -q ovirt-host2.example.com /etc/hosts
+    then 
+	sed -i '/ovirt-host2/c\'"$IP_HOST2"' ovirt-host2.example.com ovirt-host2'  /etc/hosts
+    else
+	echo "$IP_HOST2 ovirt-host2.example.com ovirt-host2" >> /etc/hosts
+    fi
+
+    
     echo "$(date -R) DONE. SSH to $VM_NAME using ' ssh $USER_IMG@ovirt-engine '"
 
 popd > /dev/null
