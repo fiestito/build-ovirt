@@ -24,7 +24,7 @@
         state: started
         enabled: yes
 
-    - name: install lvm, dnsmasq, nfs-utils and targetcli
+    - name: install lvm, firewalld, dnsmasq, nfs-utils and targetcli
       yum:
         name: "{{ item }}"
         state: latest
@@ -33,6 +33,7 @@
         - targetcli
         - lvm2
         - nfs-utils
+        - firewalld
 
     - name: update dnsmasq config
       template:
@@ -82,3 +83,28 @@
         state: started
         enabled: yes
 
+    - name: start and enabled firewalld
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: opens ports on firewall
+      firewalld:
+        service: "{{ item }}"
+        state: enabled
+        permanent: true
+        immediate: true
+      with_items:
+        - ssh
+        - https
+        - dns
+        - nfs
+
+    - name: opens port for iscsi
+      firewalld:
+        port: 3260/tcp
+        state: enabled
+        permanent: true
+        immediate: true
+   
