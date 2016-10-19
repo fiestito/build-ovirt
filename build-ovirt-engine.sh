@@ -192,21 +192,21 @@ _EOF_
 
     # Set host name with new ip on host file and ansible vars file
     echo "$(date -R) Setting host name and vars"
-    if grep -q ovirt-engine.example.com /etc/hosts)
+    if grep -q ovirt-engine.example.com /etc/hosts
     then 
 	sed -i '/ovirt-engine/c\'"$IP"' ovirt-engine.example.com ovirt-engine'  /etc/hosts
     else
 	echo "$IP ovirt-engine.example.com ovirt-engine" >> /etc/hosts
     fi
 
-    if $(grep -q ovirt-host1.example.com /etc/hosts
+    if grep -q ovirt-host1.example.com /etc/hosts
     then 
 	sed -i '/ovirt-host1/c\'"$IP_HOST1"' ovirt-host1.example.com ovirt-host1'  /etc/hosts
     else
 	echo "$IP_HOST1 ovirt-host1.example.com ovirt-host1" >> /etc/hosts
     fi
 
-    if $(grep -q ovirt-host2.example.com /etc/hosts
+    if grep -q ovirt-host2.example.com /etc/hosts
     then 
 	sed -i '/ovirt-host2/c\'"$IP_HOST2"' ovirt-host2.example.com ovirt-host2'  /etc/hosts
     else
