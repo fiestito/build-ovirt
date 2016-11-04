@@ -63,6 +63,14 @@
         lv: "{{ lv_name }}"
         size: 19G
 
+    - name: Set lvm configuration
+      template:
+        src: templates/lvm.conf.j2
+        dest: /etc/lvm/lvm.conf
+        owner: root
+        group: root
+        mode: 0644
+
     - name: Set iscsi configuration
       template:
         src: templates/saveconfig.json.j2

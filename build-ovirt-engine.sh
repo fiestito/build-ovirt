@@ -46,7 +46,7 @@ if [ ! -f "$CENTOS_IMAGE" ]
     then
 	echo "Downloading centos cloud image"
 	wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 \
-        -O $CENTOS_IMAGE -q --show-progress
+        -O $CENTOS_IMAGE -q --progress=dot
 else
 	echo "Centos image already in place"
 fi
