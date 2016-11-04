@@ -44,11 +44,11 @@ CENTOS_IMAGE=$DIR/CentOS-7-x86_64-GenericCloud.qcow2
 # Verify the cloud image is in place, if not download it
 if [ ! -f "$CENTOS_IMAGE" ]
     then
-	echo "Downloading centos cloud image"
-	wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 \
-        -O $CENTOS_IMAGE -q --progress=dot
+  echo "Downloading centos cloud image"
+  wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 \
+        -O $CENTOS_IMAGE
 else
-	echo "Centos image already in place"
+  echo "Centos image already in place"
 fi
 
 IMAGE=$CENTOS_IMAGE
@@ -56,12 +56,12 @@ IMAGE=$CENTOS_IMAGE
 
 # User of cloud image
 if [ $IMAGE == $CENTOS_IMAGE ]; then
-	USER_IMG=centos;
-	RM_CLOUDINIT=$(echo "yum, -y, remove, cloud-init")
+  USER_IMG=centos;
+  RM_CLOUDINIT=$(echo "yum, -y, remove, cloud-init")
 else
-	USER_IMG=ubuntu;
-	RM_CLOUDINIT=$(echo "apt-get, remove, cloud-init, -y")
-fi	 
+  USER_IMG=ubuntu;
+  RM_CLOUDINIT=$(echo "apt-get, remove, cloud-init, -y")
+fi   
 
 # Amount of RAM in MB
 MEM=2048
@@ -194,23 +194,23 @@ _EOF_
     echo "$(date -R) Setting host name and vars"
     if grep -q ovirt-engine.example.com /etc/hosts
     then 
-	sed -i '/ovirt-engine/c\'"$IP"' ovirt-engine.example.com ovirt-engine'  /etc/hosts
+  sed -i '/ovirt-engine/c\'"$IP"' ovirt-engine.example.com ovirt-engine'  /etc/hosts
     else
-	echo "$IP ovirt-engine.example.com ovirt-engine" >> /etc/hosts
+  echo "$IP ovirt-engine.example.com ovirt-engine" >> /etc/hosts
     fi
 
     if grep -q ovirt-host1.example.com /etc/hosts
     then 
-	sed -i '/ovirt-host1/c\'"$IP_HOST1"' ovirt-host1.example.com ovirt-host1'  /etc/hosts
+  sed -i '/ovirt-host1/c\'"$IP_HOST1"' ovirt-host1.example.com ovirt-host1'  /etc/hosts
     else
-	echo "$IP_HOST1 ovirt-host1.example.com ovirt-host1" >> /etc/hosts
+  echo "$IP_HOST1 ovirt-host1.example.com ovirt-host1" >> /etc/hosts
     fi
 
     if grep -q ovirt-host2.example.com /etc/hosts
     then 
-	sed -i '/ovirt-host2/c\'"$IP_HOST2"' ovirt-host2.example.com ovirt-host2'  /etc/hosts
+  sed -i '/ovirt-host2/c\'"$IP_HOST2"' ovirt-host2.example.com ovirt-host2'  /etc/hosts
     else
-	echo "$IP_HOST2 ovirt-host2.example.com ovirt-host2" >> /etc/hosts
+  echo "$IP_HOST2 ovirt-host2.example.com ovirt-host2" >> /etc/hosts
     fi
 
     
