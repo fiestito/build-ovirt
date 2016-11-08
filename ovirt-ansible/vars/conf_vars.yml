@@ -1,6 +1,6 @@
-engine_ip: 192.168.122.239
-host1_ip: 192.168.122.240
-host2_ip: 192.168.122.241
+engine_ip: 192.168.122.240
+host1_ip: 192.168.122.241
+host2_ip: 192.168.122.242
 dns_ip: 192.168.122.1
 pv1_name: /dev/vdb
 pv2_name: /dev/vdc
