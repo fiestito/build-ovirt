@@ -53,14 +53,24 @@
         content: nameserver 127.0.0.1
         dest: /etc/resolv.conf
        
-    - name: vg setup
+    - name: vg1 setup
       lvg:
-        vg: "{{ vg_name }}"
-        pvs: "{{ pv_name }}"
+        vg: "{{ vg1_name }}"
+        pvs: "{{ pv1_name }}"
     - name: lv setup
       lvol: 
-        vg: "{{ vg_name }}"
-        lv: "{{ lv_name }}"
+        vg: "{{ vg1_name }}"
+        lv: "{{ lv1_name }}"
+        size: 19G
+
+    - name: vg2 setup
+      lvg:
+        vg: "{{ vg2_name }}"
+        pvs: "{{ pv2_name }}"
+    - name: lv setup
+      lvol: 
+        vg: "{{ vg2_name }}"
+        lv: "{{ lv2_name }}"
         size: 19G
 
     - name: Set lvm configuration
@@ -70,6 +80,26 @@
         owner: root
         group: root
         mode: 0644
+
+    - name: Create fs for export1
+      filesystem:
+        fstype: ext4
+        dev: "/dev/{{ vg1_name }}/{{ lv1_name }}"
+
+    - name: Create mount point for export1
+      file:
+        path: /exports
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Mount export1 fs
+      mount:
+        name: /exports
+        src: "/dev/{{ vg1_name }}/{{ lv1_name }}"
+        fstype: ext4
+        state: mounted
 
     - name: Set iscsi configuration
       template:

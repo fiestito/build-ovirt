@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Script to setup and boot cloud image for ovirt-engine lab
+
+
+## Verifications before the run
 # Take one argument from the commandline: VM name
 if ! [ $# -eq 1 ]; then
     echo "Usage: $0 <user-name>"
@@ -11,22 +15,11 @@ if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
    exit 1
 fi
+##
 
+## Variables
 #VM name
 VM_NAME=ovirt-engine
-
-# Check if domain already exists
-virsh dominfo $VM_NAME > /dev/null 2>&1
-if [ "$?" -eq 0 ]; then
-    echo -n "[WARNING] $VM_NAME already exists.  "
-    read -p "Do you want to overwrite $VM_NAME [y/N]? " -r
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo ""
-    else
-        echo -e "\nNot overwriting $VM_NAME. Exiting..."
-        exit 1
-    fi
-fi
 
 # Directory to store images
 DIR=/home/$1/ovirt-build/images
@@ -41,27 +34,8 @@ SSH_KEY=$(cat /home/$1/.ssh/id_rsa.pub)
 # Location of cloud image
 CENTOS_IMAGE=$DIR/CentOS-7-x86_64-GenericCloud.qcow2
 
-# Verify the cloud image is in place, if not download it
-if [ ! -f "$CENTOS_IMAGE" ]
-    then
-  echo "Downloading centos cloud image"
-  wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 \
-        -O $CENTOS_IMAGE
-else
-  echo "Centos image already in place"
-fi
-
 IMAGE=$CENTOS_IMAGE
 #IMAGE=$UBUNTU_IMAGE
-
-# User of cloud image
-if [ $IMAGE == $CENTOS_IMAGE ]; then
-  USER_IMG=centos;
-  RM_CLOUDINIT=$(echo "yum, -y, remove, cloud-init")
-else
-  USER_IMG=ubuntu;
-  RM_CLOUDINIT=$(echo "apt-get, remove, cloud-init, -y")
-fi   
 
 # Amount of RAM in MB
 MEM=2048
@@ -75,9 +49,43 @@ META_DATA=meta-data
 CI_ISO=$VM_NAME-cidata.iso
 DISK=$VM_NAME.qcow2
 DISK2=$VM_NAME-disk2.qcow2
+DISK3=$VM_NAME-disk3.qcow2
 
 # Bridge for VMs (default on Fedora is virbr0)
 BRIDGE=virbr0
+
+#-----------------------------------------------------------
+# Check if domain already exists
+virsh dominfo $VM_NAME > /dev/null 2>&1
+if [ "$?" -eq 0 ]; then
+    echo -n "[WARNING] $VM_NAME already exists.  "
+    read -p "Do you want to overwrite $VM_NAME [y/N]? " -r
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo ""
+    else
+        echo -e "\nNot overwriting $VM_NAME. Exiting..."
+        exit 1
+    fi
+fi
+
+# Verify the cloud image is in place, if not download it
+if [ ! -f "$CENTOS_IMAGE" ]
+    then
+  echo "Downloading centos cloud image"
+  wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 \
+        -O $CENTOS_IMAGE
+else
+  echo "Centos image already in place"
+fi
+
+# User of cloud image
+if [ $IMAGE == $CENTOS_IMAGE ]; then
+  USER_IMG=centos;
+  RM_CLOUDINIT=$(echo "yum, -y, remove, cloud-init")
+else
+  USER_IMG=ubuntu;
+  RM_CLOUDINIT=$(echo "apt-get, remove, cloud-init, -y")
+fi   
 
 # Start clean
 rm -rf $DIR/$VM_NAME
@@ -144,7 +152,9 @@ _EOF_
     echo "$(date -R) Copying template image..."
     cp $IMAGE $DISK
 
+    echo "$(date -R) Creating additional disks..."
     qemu-img create -f qcow2 $DISK2 20G
+    qemu-img create -f qcow2 $DISK3 20G
 
     # Create CD-ROM ISO with cloud-init config
     echo "$(date -R) Generating ISO for cloud-init..."
@@ -152,12 +162,12 @@ _EOF_
 
     echo "$(date -R) Installing the domain and adjusting the configuration..."
     echo "[INFO] Installing with the following parameters:"
-    echo "virt-install --import --name $VM_NAME --ram $MEM --vcpus $CPUS --disk DISK,format=qcow2,bus=virtio --disk $DISK2,format=qcow2,bus=virtio --disk $CI_ISO,device=cdrom --network bridge=virbr0,model=virtio --os-type=linux --os-variant=rhel7 --noautoconsole"
+    echo "VM name=$VM_NAME ram=$MEM vcpus=$CPUS bridge=$BRIDGE"
 
     virt-install --import --name $VM_NAME --ram $MEM --vcpus $CPUS --disk \
-    $DISK,format=qcow2,bus=virtio --disk $DISK2,format=qcow2,bus=virtio --disk \
-    $CI_ISO,device=cdrom --network bridge=virbr0,model=virtio \
-    --os-type=linux --os-variant=rhel7 --noautoconsole
+    $DISK,format=qcow2,bus=virtio --disk $DISK2,format=qcow2,bus=virtio \
+    --disk $DISK3,format=qcow2,bus=virtio --disk $CI_ISO,device=cdrom --network \
+    bridge=$BRIDGE,model=virtio --os-type=linux --os-variant=rhel7 --noautoconsole
 
     MAC=$(virsh dumpxml $VM_NAME | awk -F\' '/mac address/ {print $2}')
     while true
