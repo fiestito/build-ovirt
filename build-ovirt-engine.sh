@@ -111,7 +111,7 @@ pushd $DIR/$VM_NAME > /dev/null
 # Hostname management
 preserve_hostname: False
 hostname: $VM_NAME
-fqdn: $VM_NAME-engine.example.com
+fqdn: $VM_NAME.example.com
 
 # Set root pass
 users:
