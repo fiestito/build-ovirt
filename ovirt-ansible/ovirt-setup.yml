@@ -14,16 +14,6 @@
         group: root
         mode: 0644   
  
-    - name: Disable NetworkManager
-      service:
-        name: NetworkManager
-        enabled: no
-    - name: Enabled and start network
-      service:
-        name: network
-        state: started
-        enabled: yes
-
     - name: install lvm, firewalld, dnsmasq, nfs-utils and targetcli
       yum:
         name: "{{ item }}"
@@ -34,6 +24,17 @@
         - lvm2
         - nfs-utils
         - firewalld
+        - NetworkManager
+    
+    - name: Disable NetworkManager
+      service:
+        name: NetworkManager
+        enabled: no
+    - name: Enabled and start network
+      service:
+        name: network
+        state: started
+        enabled: yes
 
     - name: update dnsmasq config
       template:
