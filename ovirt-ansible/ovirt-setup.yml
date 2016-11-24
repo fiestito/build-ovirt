@@ -62,7 +62,7 @@
       lvol: 
         vg: "{{ vg1_name }}"
         lv: "{{ lv1_name }}"
-        size: 19G
+        size: 24G
 
     - name: vg2 setup
       lvg:
@@ -72,7 +72,7 @@
       lvol: 
         vg: "{{ vg2_name }}"
         lv: "{{ lv2_name }}"
-        size: 19G
+        size: 24G
 
     - name: Set lvm configuration
       template:

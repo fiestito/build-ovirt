@@ -153,8 +153,8 @@ _EOF_
     cp $IMAGE $DISK
 
     echo "$(date -R) Creating additional disks..."
-    qemu-img create -f qcow2 $DISK2 20G
-    qemu-img create -f qcow2 $DISK3 20G
+    qemu-img create -f qcow2 $DISK2 25G
+    qemu-img create -f qcow2 $DISK3 25G
 
     # Create CD-ROM ISO with cloud-init config
     echo "$(date -R) Generating ISO for cloud-init..."
